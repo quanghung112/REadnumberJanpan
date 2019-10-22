@@ -1,34 +1,35 @@
-KANJI_DICT = {"#{10**52}" => "恒河沙", "#{10**48}" => "極", "#{10**44}" => "載", "#{10**40}" => "正",
-              "#{10**36}"=> "澗", "#{10**32}"=>"溝", "#{10**28}" => "穣", "#{10**24}" => "𥝱",
-              "#{10**20}"=> "垓", "#{10**16}" => "京", "#{10**12}" => "兆", "#{10**8}" => "億", 
-              "10000" => "万", "1000" => "千","100" => "百", "10" => "十", "9" => "九", "8" => "八",
-              "7" => "七", "6" => "六", "5" => "五", "4" => "四", "3" => "三", "2" => "二", "1" => "一"}  
+KANJI = { (10**52).to_s => '恒河沙', (10**48).to_s => '極', (10**44).to_s => '載',
+          (10**40).to_s => '正', (10**36).to_s => '澗', (10**32).to_s => '溝',
+          (10**28).to_s => '穣', (10**24).to_s => '𥝱', (10**20).to_s => '垓',
+          (10**16).to_s => '京', (10**12).to_s => '兆', (10**8).to_s => '億',
+          '10000' => '万', '1000' => '千', '100' => '百', '10' => '十',
+          '9' => '九', '8' => '八', '7' => '七', '6' => '六', '5' => '五',
+          '4' => '四', '3' => '三', '2' => '二', '1' => '一' }.freeze
 
-def to_kansuji(int)
-  return "零" if int == 0
-  KANJI_DICT.each do |num, name|
-    a = num.to_i
-    if int <= 10
-      return name if int == a
-    elsif (int / a).positive?
-      return  name if int % a == 0 && int <= 1000 && int / a <= 1
-      return to_kansuji(int / a) + name if int % a == 0 
-      return to_kansuji(int - int % a) + to_kansuji(int % a)
+def to_kansuji(input)
+  return '零' if input.zero?
+
+  KANJI.each do |k, v|
+    if input <= 10
+      return v if input == k.to_i
+    elsif (input / k.to_i).positive?
+      return v if (input % k.to_i).zero? && input <= 1000 && input / k.to_i <= 1
+      return to_kansuji(input / k.to_i) + v if (input % k.to_i).zero?
+
+      return to_kansuji(input - input % k.to_i) + to_kansuji(input % k.to_i)
     end
   end
 end
 
-def to_number(string)
-  KANJI_DICT.each do |num, name|
-    a = num.to_i
-    return 0 if string.to_s == '零' || string.to_s == ''
-    return a if string.to_s == name && a < 10
-    if (string.include? name)
-      return a + to_number(string.sub!(name, '')) if string.index(name) == 0
-      return to_number(string.split(name)[0]) * a + to_number(string.split(name)[1])
-    end
+def to_number(word)
+  KANJI.each do |k, v|
+    return 0 if word.to_s == '零' || word.to_s == ''
+    return k.to_i if word.to_s == v && k.to_i < 10
+
+    next unless word.include? v
+    return k.to_i + to_number(word.sub!(v, '')) if word.index(v).zero?
+
+    word_split = word.split(v)
+    return to_number(word_split[0]) * k.to_i + to_number(word_split[1])
   end
 end
-puts to_number('零')
-
-
