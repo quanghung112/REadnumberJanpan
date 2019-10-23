@@ -1,35 +1,41 @@
-KANJI = { (10**52).to_s => '恒河沙', (10**48).to_s => '極', (10**44).to_s => '載',
+# frozen_string_literal: true
+
+KANJI = { (10**68).to_s => '無量大数', (10**64).to_s => '不可思議',
+          (10**60).to_s => '那由他', (10**56).to_s => '阿僧祇',
+          (10**52).to_s => '恒河沙', (10**48).to_s => '極', (10**44).to_s => '載',
           (10**40).to_s => '正', (10**36).to_s => '澗', (10**32).to_s => '溝',
           (10**28).to_s => '穣', (10**24).to_s => '𥝱', (10**20).to_s => '垓',
           (10**16).to_s => '京', (10**12).to_s => '兆', (10**8).to_s => '億',
           '10000' => '万', '1000' => '千', '100' => '百', '10' => '十',
           '9' => '九', '8' => '八', '7' => '七', '6' => '六', '5' => '五',
           '4' => '四', '3' => '三', '2' => '二', '1' => '一' }.freeze
+# Converter number to kansuji
+class Integer
+  def to_kansuji
+    return '零' if zero?
 
-def to_kansuji(input)
-  return '零' if input.zero?
+    KANJI.each do |k, v|
+      return v if self <= 1000 && self == k.to_i
 
-  KANJI.each do |k, v|
-    if input <= 10
-      return v if input == k.to_i
-    elsif (input / k.to_i).positive?
-      return v if (input % k.to_i).zero? && input <= 1000 && input / k.to_i <= 1
-      return to_kansuji(input / k.to_i) + v if (input % k.to_i).zero?
+      next unless (self / k.to_i).positive?
+      return (self / k.to_i).to_kansuji + v if (self % k.to_i).zero?
 
-      return to_kansuji(input - input % k.to_i) + to_kansuji(input % k.to_i)
+      return (self - self % k.to_i).to_kansuji + (self % k.to_i).to_kansuji
     end
   end
 end
+# Converter string to kansuji
+class String
+  def to_number
+    KANJI.each do |k, v|
+      return 0 if self == '零' || self == ''
+      return k.to_i if self == v && k.to_i < 10
 
-def to_number(word)
-  KANJI.each do |k, v|
-    return 0 if word.to_s == '零' || word.to_s == ''
-    return k.to_i if word.to_s == v && k.to_i < 10
+      next unless include? v
+      return k.to_i + sub!(v, '').to_number if index(v).zero?
+      return (split(v)[0]).to_number * k.to_i if split(v)[1].nil?
 
-    next unless word.include? v
-    return k.to_i + to_number(word.sub!(v, '')) if word.index(v).zero?
-
-    word_split = word.split(v)
-    return to_number(word_split[0]) * k.to_i + to_number(word_split[1])
+      return (split(v)[0]).to_number * k.to_i + (split(v)[1]).to_number
+    end
   end
 end
